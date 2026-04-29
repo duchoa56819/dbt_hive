@@ -1,0 +1,68 @@
+version: '3'
+
+services:
+  dbt-hive-namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop2.7.4-java8
+    container_name: dbt-hive-namenode
+    volumes:
+      - namenode:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=test
+    env_file:
+      - ./hadoop.env
+    ports:
+      - "50070:50070"
+
+  dbt-hive-datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop2.7.4-java8
+    container_name: dbt-hive-datanode
+    volumes:
+      - datanode:/hadoop/dfs/data
+    env_file:
+      - ./hadoop.env
+    environment:
+      SERVICE_PRECONDITION: "dbt-hive-namenode:50070"
+
+  dbt-hive-server:
+    image: bde2020/hive:2.3.2-postgresql-metastore
+    container_name: dbt-hive-server
+    env_file:
+      - ./hadoop.env
+    environment:
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionURL: "jdbc:postgresql://dbt-hive-metastore-db:5432/metastore"
+      SERVICE_PRECONDITION: "dbt-hive-metastore:9083"
+    ports:
+      - "10000:10000"
+
+  dbt-hive-metastore:
+    image: bde2020/hive:2.3.2-postgresql-metastore
+    container_name: dbt-hive-metastore
+    env_file:
+      - ./hadoop.env
+    command: /opt/hive/bin/hive --service metastore
+    environment:
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionURL: "jdbc:postgresql://dbt-hive-metastore-db:5432/metastore"
+      SERVICE_PRECONDITION: "dbt-hive-namenode:50070 dbt-hive-datanode:50075 dbt-hive-metastore-db:5432"
+    ports:
+      - "9083:9083"
+
+  dbt-hive-metastore-db:
+    image: postgres:9.6
+    container_name: dbt-hive-metastore-db
+    environment:
+      - POSTGRES_USER=hive
+      - POSTGRES_PASSWORD=hive
+      - POSTGRES_DB=metastore
+
+  hive-schema-init:
+    image: bde2020/hive:2.3.2-postgresql-metastore
+    container_name: hive-schema-init
+    env_file:
+      - ./hadoop.env
+    command: /opt/hive/bin/schematool -dbType postgres -initSchema
+    environment:
+      SERVICE_PRECONDITION: "dbt-hive-metastore-db:5432"
+
+volumes:
+  namenode:
+  datanode:

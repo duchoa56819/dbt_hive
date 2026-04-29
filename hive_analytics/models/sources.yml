@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: hive_raw
+    database: default
+    schema: default
+    tables:
+      - name: raw_users
+      - name: raw_transactions

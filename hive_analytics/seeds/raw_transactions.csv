@@ -1,0 +1,11 @@
+transaction_id,user_id,amount,category,transaction_date
+1,1,100.5,electronics,2023-05-01
+2,2,50.0,books,2023-05-02
+3,1,75.25,electronics,2023-05-05
+4,3,200.0,furniture,2023-06-10
+5,2,30.0,books,2023-06-12
+6,4,120.0,electronics,2023-07-01
+7,5,90.0,clothing,2023-07-05
+8,1,45.0,books,2023-08-01
+9,3,150.0,furniture,2023-08-10
+10,4,80.0,electronics,2023-09-01
